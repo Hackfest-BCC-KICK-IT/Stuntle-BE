@@ -1,0 +1,37 @@
+version: '3.7'
+services:
+  postgres:
+    container_name: "stuntle_db"
+    image: "postgres:15.5"
+    volumes:
+      - "postgres_volume:/var/lib/postgresql/data"
+    restart: on-failure
+    networks:
+      - "stuntle_network"
+    environment:
+      - POSTGRES_PASSWORD=stuntledb
+    ports:
+      - "5432:5432"
+  redis:
+    container_name: "redis_db"
+    image: "redis:latest"
+    ports:
+      - "6380:6379"
+    networks:
+      - "stuntle_network"
+  stuntle:
+    container_name: "stuntle_app"
+    build: .
+    depends_on:
+      - "postgres"
+      - "redis"
+    networks:
+      - "stuntle_network"
+    ports:
+      - "8081:8080"
+    restart: "on-failure"
+networks:
+  stuntle_network:
+volumes:
+  mysql_volume:
+  postgres_volume:

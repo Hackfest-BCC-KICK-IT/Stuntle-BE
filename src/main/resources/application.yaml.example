@@ -1,0 +1,42 @@
+db:
+  r2dbc:
+    username:
+    password:
+    host:
+    port:
+    url:
+    database:
+#spring:
+#  profiles:
+#    active: dev
+r2dbc:
+  name:
+
+logging:
+  level:
+    io.r2dbc.postgresql.QUERY: DEBUG # for queries
+    io.r2dbc.postgresql.PARAM: DEBUG # for parameters
+    org:
+      springframework:
+        r2dbc: DEBUG
+
+springdoc:
+  use-fqn: true
+  swagger-ui:
+#    disable-swagger-default-url: true
+    path:
+    oauth:
+      use-basic-authentication-with-access-code-grant:
+  show-actuator:
+  enable-spring-security:
+
+cloudinary:
+  url:
+
+openai:
+  key:
+
+redis:
+  host:
+  port:
+  password:
