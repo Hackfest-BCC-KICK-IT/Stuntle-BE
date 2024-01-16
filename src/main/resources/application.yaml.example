@@ -12,6 +12,7 @@ db:
 r2dbc:
   name:
 
+
 logging:
   level:
     io.r2dbc.postgresql.QUERY: DEBUG # for queries

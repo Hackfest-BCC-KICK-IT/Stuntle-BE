@@ -16,8 +16,8 @@ public class ReactiveCustomUserDetailsService{
     @Bean
     public ReactiveUserDetailsService userDetailsService(){
         var user = User.builder()
-                .username("sipas")
-                .password(bcryptEncoder().encode("sipas"))
+                .username("stuntle")
+                .password(bcryptEncoder().encode("stuntle"))
                 .build();
         return new MapReactiveUserDetailsService(user);
     }

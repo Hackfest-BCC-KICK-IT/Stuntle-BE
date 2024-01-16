@@ -11,7 +11,6 @@ import java.time.format.DateTimeFormatter;
 public class DataKehamilanDto {
 
     public record Create(
-
             @NotNull(message = "nama calon bayi harus ada")
             @NotBlank(message = "nama calon bayi tidak boleh kosong")
             String namaCalonBayi,

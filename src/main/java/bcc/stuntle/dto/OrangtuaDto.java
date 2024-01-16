@@ -16,9 +16,9 @@ public class OrangtuaDto {
             @NotBlank(message = "nama ibu tidak boleh kosong")
             String namaIbu,
 
-            @NotNull(message = "nama ayah harus ada")
-            @NotBlank(message = "nama ayah tidak boleh kosong")
-            String namaAyah,
+            @NotNull(message = "nomorTelepon harus ada")
+            @NotBlank(message = "nomorTelepon tidak boleh kosong")
+            String nomorTelepon,
 
             @Email
             @NotNull(message = "email harus ada")
@@ -32,7 +32,7 @@ public class OrangtuaDto {
     ){
         public Orangtua toOrangtua(){
             return Orangtua.builder()
-                    .namaAyah(this.namaAyah)
+                    .nomorTelepon(this.nomorTelepon)
                     .namaIbu(this.namaIbu)
                     .email(this.email)
                     .password(BcryptUtil.encode(this.password))
@@ -56,7 +56,8 @@ public class OrangtuaDto {
     public record Update(
             String namaAyah,
             String namaIbu,
-            String email
+            String email,
+            String nomorTelepon
     ){
         public Orangtua toOrangtua(){
             return Orangtua
@@ -64,6 +65,7 @@ public class OrangtuaDto {
                     .namaAyah(this.namaAyah)
                     .namaIbu(this.namaIbu)
                     .email(this.email)
+                    .nomorTelepon(this.nomorTelepon)
                     .updatedAt(LocalDate.now())
                     .build();
         }
