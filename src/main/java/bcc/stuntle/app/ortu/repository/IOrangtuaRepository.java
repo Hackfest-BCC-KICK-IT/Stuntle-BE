@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 interface IOrangtuaRepository extends R2dbcRepository<Orangtua, Long> {
 
     String createSql = """
-    INSERT INTO orang_tua(nama_ibu, nama_ayah, email, password, is_connect_faskes, created_at)
+    INSERT INTO orang_tua(nama_ibu, nomor_telepon, email, password, is_connect_faskes, created_at)
     VALUES
     ($1, $2, $3, $4, $5, $6)        
     """;

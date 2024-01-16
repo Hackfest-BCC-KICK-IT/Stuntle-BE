@@ -22,6 +22,8 @@ public class Orangtua {
 
     private String namaIbu;
 
+    private String nomorTelepon;
+
     private String namaAyah;
 
     private String email;

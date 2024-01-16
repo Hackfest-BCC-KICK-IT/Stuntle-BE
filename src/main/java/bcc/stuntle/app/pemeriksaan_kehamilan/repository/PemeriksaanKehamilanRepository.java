@@ -7,6 +7,7 @@ import bcc.stuntle.util.PageableUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -109,5 +110,20 @@ public class PemeriksaanKehamilanRepository {
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(list));
                 });
+    }
+
+    public Mono<List<DataPemeriksaanKehamilan>> findByExample(Example<DataPemeriksaanKehamilan> example){
+        return this.repository.findAll(example).collectList();
+    }
+
+    public Mono<List<DataPemeriksaanKehamilan>> findByIds(List<Long> ids){
+        var query = Query
+                .query(
+                        Criteria.where("fk_data_kehamilan")
+                                .in(ids)
+                );
+        return this.template
+                .select(query, DataPemeriksaanKehamilan.class)
+                .collectList();
     }
 }

@@ -1,7 +1,9 @@
 package bcc.stuntle.app.data_kehamilan.repository;
 
+import bcc.stuntle.app.pemeriksaan_kehamilan.repository.PemeriksaanKehamilanRepository;
 import bcc.stuntle.constant.DataKehamilanRedisConstant;
 import bcc.stuntle.entity.DataKehamilan;
+import bcc.stuntle.entity.DataPemeriksaanKehamilan;
 import bcc.stuntle.exception.DataTidakDitemukanException;
 import bcc.stuntle.util.ObjectMapperUtils;
 import bcc.stuntle.util.PageableUtils;
@@ -18,6 +20,7 @@ import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.CriteriaDefinition;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -36,6 +39,9 @@ public class DataKehamilanRepository {
 
     @Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
+
+    @Autowired
+    private PemeriksaanKehamilanRepository pemeriksaanKehamilanRepository;
 
     public Mono<DataKehamilan> save(DataKehamilan data){
         var ops = this.redisTemplate.opsForValue();
@@ -123,6 +129,23 @@ public class DataKehamilanRepository {
                     log.info("redis result null on DataKehamilanRepository.getList(ortuId, pageable)");
                     return this.template
                             .select(query, DataKehamilan.class)
+                            .flatMap((v) -> {
+                                var pemeriksaanIds = this.pemeriksaanKehamilanRepository
+                                        .findByExample(
+                                                Example
+                                                        .of(
+                                                                DataPemeriksaanKehamilan
+                                                                        .builder()
+                                                                        .fkDataKehamilan(v.getId())
+                                                                        .build()
+                                                        )
+                                        )
+                                        .map((pemeriksaanKehamilan) -> pemeriksaanKehamilan.stream().map(DataPemeriksaanKehamilan::getId).toList());
+                                return pemeriksaanIds.map((ids) -> {
+                                    v.setFkPemeriksaanIds(ids);
+                                    return v;
+                                });
+                            })
                             .collectList()
                             .zipWith(this.dataKehamilanRepository.count())
                             .map(Tuple2::toList)

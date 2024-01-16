@@ -169,9 +169,6 @@ CREATE TABLE IF NOT EXISTS "data_pemeriksaan_anak"(
     deleted_at TIMESTAMP
 );
 
-alter table resep_makanan
-add column public_id VARCHAR(255) not null default '';
-
 DROP TABLE IF EXISTS "artikel";
 CREATE TABLE IF NOT EXISTS "artikel"(
     id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -227,7 +224,7 @@ CREATE TABLE IF NOT EXISTS "ajukan_bantuan"(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP
-)
+);
 
 DROP TABLE IF EXISTS "resep_makanan_artikel_tersimpan";
 CREATE TABLE IF NOT EXISTS "resep_makanan_artikel_tersimpan"(
@@ -244,3 +241,6 @@ CREATE TABLE IF NOT EXISTS "resep_makanan_artikel_tersimpan"(
 
 ALTER TABLE "orang_tua"
 ADD COLUMN "image_url" VARCHAR(255);
+
+ALTER TABLE "data_kehamilan"
+ADD COLUMN "prediksi_tanggal_lahir" VARCHAR(255);

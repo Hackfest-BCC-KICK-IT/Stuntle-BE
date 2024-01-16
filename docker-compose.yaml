@@ -19,17 +19,17 @@ services:
       - "6380:6379"
     networks:
       - "stuntle_network"
-  stuntle:
-    container_name: "stuntle_app"
-    build: .
-    depends_on:
-      - "postgres"
-      - "redis"
-    networks:
-      - "stuntle_network"
-    ports:
-      - "8081:8080"
-    restart: "on-failure"
+#  stuntle:
+#    container_name: "stuntle_app"
+#    build: .
+#    depends_on:
+#      - "postgres"
+#      - "redis"
+#    networks:
+#      - "stuntle_network"
+#    ports:
+#      - "8081:8080"
+#    restart: "on-failure"
 networks:
   stuntle_network:
 volumes:

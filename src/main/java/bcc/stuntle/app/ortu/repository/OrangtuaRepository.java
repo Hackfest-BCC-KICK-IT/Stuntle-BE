@@ -44,7 +44,7 @@ public class OrangtuaRepository {
                 .create()
                 .flatMapMany((c) -> c.createStatement(IOrangtuaRepository.createSql)
                         .bind("$1", orangtua.getNamaIbu())
-                        .bind("$2", orangtua.getNamaAyah())
+                        .bind("$2", orangtua.getNomorTelepon())
                         .bind("$3", orangtua.getEmail())
                         .bind("$4", orangtua.getPassword())
                         .bind("$5", orangtua.getIsConnectedWithFaskes())

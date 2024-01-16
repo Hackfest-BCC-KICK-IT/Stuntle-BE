@@ -49,6 +49,7 @@ public class DataKehamilanService implements IDataKehamilanService{
     public Mono<ResponseEntity<Response<DataKehamilan>>> create(Long id, DataKehamilanDto.Create dto) {
         DataKehamilan dataKehamilan = dto.toDataKehamilan();
         dataKehamilan.setFkOrtuId(id);
+        dataKehamilan.setPrediksiTanggalLahir(dataKehamilan.getTanggalPertamaHaid().plusMonths(9));
         return this
                 .ortuRepository.findOne(Example.of(
                         Orangtua
