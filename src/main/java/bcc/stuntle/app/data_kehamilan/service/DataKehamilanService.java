@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.relational.core.query.Criteria;
+import org.springframework.data.relational.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -209,5 +211,10 @@ public class DataKehamilanService implements IDataKehamilanService{
                                 .message("sukses menghapus data kehamilan")
                                 .build()
                 ));
+    }
+
+    public Mono<List<DataKehamilan>> getListByFaskes(Long faskesId){
+        return this.repository
+                .getListByFaskes(faskesId);
     }
 }

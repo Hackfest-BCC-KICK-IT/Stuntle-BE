@@ -1,5 +1,6 @@
 package bcc.stuntle.app.orang_tua_faskes.repository;
 
+import bcc.stuntle.app.ortu.repository.OrangtuaRepository;
 import bcc.stuntle.constant.OrangtuaFaskesRedisConstant;
 import bcc.stuntle.entity.OrangtuaFaskes;
 import bcc.stuntle.exception.DataTidakDitemukanException;
@@ -16,6 +17,7 @@ import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.CriteriaDefinition;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -33,6 +35,9 @@ public class OrangtuaFaskesRepository {
 
     @Autowired
     private ReactiveRedisTemplate<String, String> redisTemplate;
+
+    @Autowired
+    private OrangtuaRepository ortuRepository;
 
     public Mono<OrangtuaFaskes> create(OrangtuaFaskes ortuFaskes){
         return this.template
@@ -59,6 +64,21 @@ public class OrangtuaFaskesRepository {
                             .flatMap((t) -> Mono.fromCallable(() -> new PageImpl<>(t.getT1(), pageable, t.getT2())))
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
+                .flatMap((pageStr) -> {
+                    var page = ObjectMapperUtils.readPageValue(pageStr, OrangtuaFaskes.class);
+                    var list = page.getContent();
+                    var flux = Flux.fromStream(list.stream());
+                    return flux.flatMap((ortuFaskes) -> this.ortuRepository.findById(ortuFaskes.getFkOrtuId()).map((ortu) -> {
+                        log.info("ortu = {}", ortu);
+                        ortuFaskes.setNamaAyah(ortu.getNamaAyah());
+                        ortuFaskes.setNamaIbu(ortu.getNamaIbu());
+                        return ortuFaskes;
+                    })).collectList()
+                            .map((listOrtuFaskes) -> {
+                                return new PageImpl<>(listOrtuFaskes, page.getPageable(), page.getNumber());
+                            })
+                            .map(ObjectMapperUtils::writeValueAsString);
+                })
                 .flatMap((pageStr) -> {
                     Page<OrangtuaFaskes> page = ObjectMapperUtils.readPageValue(pageStr, OrangtuaFaskes.class);
                     return ops.set(key, pageStr, Duration.ofMinutes(1))
@@ -117,7 +137,20 @@ public class OrangtuaFaskesRepository {
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
                 .flatMap((listStr) -> {
+                    log.info("masuk");
+                    var list = ObjectMapperUtils.readListValue(listStr, OrangtuaFaskes.class);
+                    var flux = Flux.fromStream(list.stream());
+                    return flux.flatMap((ortuFaskes) -> this.ortuRepository.findById(ortuFaskes.getFkOrtuId()).map((ortu) -> {
+                        log.info("ortu = {}", ortu);
+                        ortuFaskes.setNamaAyah(ortu.getNamaAyah());
+                        ortuFaskes.setNamaIbu(ortu.getNamaIbu());
+                        return ortuFaskes;
+                    })).collectList();
+                })
+                .map(ObjectMapperUtils::writeValueAsString)
+                .flatMap((listStr) -> {
                     List<OrangtuaFaskes> list = ObjectMapperUtils.readListValue(listStr, OrangtuaFaskes.class);
+
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(list));
                 });

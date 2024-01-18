@@ -1,7 +1,9 @@
 package bcc.stuntle.app.data_anak.repository;
 
+import bcc.stuntle.app.pemeriksaan_anak.repository.PemeriksaanAnakRepository;
 import bcc.stuntle.constant.DataAnakRedisConstant;
 import bcc.stuntle.entity.DataAnak;
+import bcc.stuntle.entity.DataPemeriksaanAnak;
 import bcc.stuntle.exception.DataTidakDitemukanException;
 import bcc.stuntle.util.ObjectMapperUtils;
 import bcc.stuntle.util.PageableUtils;
@@ -23,6 +25,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Repository
@@ -31,6 +37,9 @@ public class DataAnakRepository {
 
     @Autowired
     private IDataAnakRepository repository;
+
+    @Autowired
+    private PemeriksaanAnakRepository pemeriksaanAnakRepository;
 
     @Autowired
     private R2dbcEntityTemplate template;
@@ -58,6 +67,8 @@ public class DataAnakRepository {
                 }))
                 .flatMap((dataAnakStr) -> {
                     var dataAnak = ObjectMapperUtils.readValue(dataAnakStr, DataAnak.class);
+                    var period = Period.between(dataAnak.getTanggalLahir(), LocalDate.now());
+                    dataAnak.setUsiaAnak(String.format("%s Tahun %s Bulan %s Hari", period.getYears(), period.getMonths(), period.getDays()));
                     return ops.set(key, dataAnakStr, Duration.ofMinutes(1))
                             .then(Mono.just(dataAnak));
                 });
@@ -74,6 +85,10 @@ public class DataAnakRepository {
                 } )))
                 .flatMapMany((dataAnakStr) -> {
                     var listDataAnak = ObjectMapperUtils.readListValue(dataAnakStr, DataAnak.class);
+                    listDataAnak.forEach((dataAnak -> {
+                        var period = Period.between(dataAnak.getTanggalLahir(), LocalDate.now());
+                        dataAnak.setUsiaAnak(String.format("%s Tahun %s Bulan %s Hari", period.getYears(), period.getMonths(), period.getDays()));
+                    }));
                     return ops.set(key, dataAnakStr, Duration.ofMinutes(1))
                             .thenMany(Flux.fromIterable(listDataAnak));
                 });
@@ -97,6 +112,23 @@ public class DataAnakRepository {
                     return this.template
                             .select(query, DataAnak.class)
                             .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
+                            .flatMap((dataAnak) -> {
+                                var pemeriksaanAnakIds = this.pemeriksaanAnakRepository
+                                        .getList(
+                                                Example.of(
+                                                        DataPemeriksaanAnak
+                                                                .builder()
+                                                                .fkDataAnak(dataAnak.getId())
+                                                                .build()
+                                                )
+                                        )
+                                        .map((d) -> d.stream().map(DataPemeriksaanAnak::getId).toList());
+                                return pemeriksaanAnakIds
+                                        .map((v) -> {
+                                            dataAnak.setFkDataPemeriksaanAnak(v);
+                                            return dataAnak;
+                                        });
+                            })
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)
@@ -104,12 +136,15 @@ public class DataAnakRepository {
                 }))
                 .flatMap((listStr) -> {
                     var list = ObjectMapperUtils.readListValue(listStr, Object.class);
-                    var listData = (List<DataAnak>) list.get(0);
+                    var listDataStr = ObjectMapperUtils.writeValueAsString(list.get(0));
+                    var listData = ObjectMapperUtils.readListValue(listDataStr, DataAnak.class);
                     var n = (Integer) list.get(1);
+                    listData.forEach((dataAnak -> {
+                        var period = Period.between(dataAnak.getTanggalLahir(), LocalDate.now());
+                        dataAnak.setUsiaAnak(String.format("%s Tahun %s Bulan %s Hari", period.getYears(), period.getMonths(), period.getDays()));
+                    }));
                     return ops.set(key, listStr, Duration.ofMinutes(1))
-                            .then(Mono.defer(() ->
-                                Mono.fromCallable(() -> new PageImpl<>(listData, pageable, n))
-                            ));
+                            .then(Mono.fromCallable(() -> new PageImpl<>(listData, pageable, n)));
                 });
     }
 
@@ -138,6 +173,11 @@ public class DataAnakRepository {
                     var tempT1 =list.get(0);
                     var t1 = ObjectMapperUtils.mapper.convertValue(tempT1, new TypeReference<List<DataAnak>>() {});
                     var t2 = (Integer) list.get(1);
+
+                    t1.forEach((dataAnak -> {
+                        var period = Period.between(dataAnak.getTanggalLahir(), LocalDate.now());
+                        dataAnak.setUsiaAnak(String.format("%s Tahun %s Bulan %s Hari", period.getYears(), period.getMonths(), period.getDays()));
+                    }));
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(new PageImpl<>(t1, page, t2)));
                 });
@@ -171,6 +211,11 @@ public class DataAnakRepository {
                     var tempT1 = list.get(0);
                     var t1 = ObjectMapperUtils.mapper.convertValue(tempT1, new TypeReference<List<DataAnak>>() {});
                     var t2 = (Integer) list.get(1);
+
+                    t1.forEach((dataAnak -> {
+                        var period = Period.between(dataAnak.getTanggalLahir(), LocalDate.now());
+                        dataAnak.setUsiaAnak(String.format("%s Tahun %s Bulan %s Hari", period.getYears(), period.getMonths(), period.getDays()));
+                    }));
                     return ops.set(key, t1.toString(), Duration.ofMinutes(1))
                             .then(Mono.just(new PageImpl<>(t1, pageable, t2)));
                 });

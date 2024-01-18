@@ -25,6 +25,8 @@ public class DataKehamilan {
 
     private String namaCalonBayi;
 
+    private Long usiaKehamilan;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private LocalDate tanggalPertamaHaid;
 
@@ -45,4 +47,10 @@ public class DataKehamilan {
 
     @Transient
     private List<Long> fkPemeriksaanIds;
+
+    @Transient
+    private String namaAyah;
+
+    @Transient
+    private String namaIbu;
 }

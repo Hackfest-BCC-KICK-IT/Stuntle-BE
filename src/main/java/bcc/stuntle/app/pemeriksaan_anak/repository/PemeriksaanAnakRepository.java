@@ -7,6 +7,7 @@ import bcc.stuntle.util.PageableUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -110,5 +111,9 @@ public class PemeriksaanAnakRepository {
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(new PageImpl<>(t1, pageable, t2)));
                 });
+    }
+
+    public Mono<List<DataPemeriksaanAnak>> getList(Example<DataPemeriksaanAnak> example){
+        return this.repository.findAll(example).collectList();
     }
 }

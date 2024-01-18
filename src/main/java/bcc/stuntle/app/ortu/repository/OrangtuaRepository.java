@@ -147,4 +147,8 @@ public class OrangtuaRepository {
                 .flatMap((res) -> this.redisTemplate.keys(OrangtuaRedisConstant.ALL)
                         .flatMap(ops::delete).then(Mono.just(res)));
     }
+
+    public Mono<List<Orangtua>> findListOrangtuaByIds(List<Long> ids){
+        return this.repository.findAllById(ids).collectList();
+    }
 }

@@ -1,9 +1,10 @@
 package bcc.stuntle.app.data_kehamilan.repository;
 
+import bcc.stuntle.app.orang_tua_faskes.repository.OrangtuaFaskesRepository;
+import bcc.stuntle.app.ortu.repository.OrangtuaRepository;
 import bcc.stuntle.app.pemeriksaan_kehamilan.repository.PemeriksaanKehamilanRepository;
 import bcc.stuntle.constant.DataKehamilanRedisConstant;
-import bcc.stuntle.entity.DataKehamilan;
-import bcc.stuntle.entity.DataPemeriksaanKehamilan;
+import bcc.stuntle.entity.*;
 import bcc.stuntle.exception.DataTidakDitemukanException;
 import bcc.stuntle.util.ObjectMapperUtils;
 import bcc.stuntle.util.PageableUtils;
@@ -43,6 +44,12 @@ public class DataKehamilanRepository {
     @Autowired
     private PemeriksaanKehamilanRepository pemeriksaanKehamilanRepository;
 
+    @Autowired
+    private OrangtuaFaskesRepository ortuFaskesRepository;
+
+    @Autowired
+    private OrangtuaRepository ortuRepository;
+
     public Mono<DataKehamilan> save(DataKehamilan data){
         var ops = this.redisTemplate.opsForValue();
         return this.redisTemplate
@@ -51,6 +58,7 @@ public class DataKehamilanRepository {
                 .then(this.dataKehamilanRepository.save(data));
     }
 
+    // TODO: tambahin implementasi buat dapatin data pemeriksaan meskipun cuman dapatin 1
     public  Mono<DataKehamilan> find(Example<DataKehamilan> example){
         var ops = this.redisTemplate.opsForValue();
         var key = String.format(DataKehamilanRedisConstant.GET_EXAMPLE, example);
@@ -163,5 +171,26 @@ public class DataKehamilanRepository {
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(new PageImpl<>(t1, pageable, t2)));
                 });
+    }
+
+    public Mono<List<DataKehamilan>> getListByFaskes(Long faskesId){
+        return this.ortuFaskesRepository
+                .getList(faskesId, Pageable.unpaged())
+                .map(Page::getContent)
+                .map((ortuFaskes) -> ortuFaskes.stream().map(OrangtuaFaskes::getFkOrtuId).toList())
+                .flatMap((ortuIds) -> {
+                    var query = Query.query(
+                            Criteria.where("fk_ortu_id").in(ortuIds)
+                    );
+                    return this.template
+                            .select(query, DataKehamilan.class)
+                            .flatMap((dataKehamilan) -> this.ortuRepository.findById(dataKehamilan.getFkOrtuId()).map((ortu) -> {
+                                dataKehamilan.setNamaAyah(ortu.getNamaAyah());
+                                dataKehamilan.setNamaIbu(ortu.getNamaIbu());
+                                return dataKehamilan;
+                            }))
+                            .collectList();
+                });
+
     }
 }
