@@ -6,12 +6,13 @@ db:
     port:
     url:
     database:
-#spring:
-#  profiles:
-#    active: dev
+
+
 r2dbc:
   name:
 
+prediction:
+  url:
 
 logging:
   level:
@@ -24,12 +25,8 @@ logging:
 springdoc:
   use-fqn: true
   swagger-ui:
-#    disable-swagger-default-url: true
-    path:
-    oauth:
-      use-basic-authentication-with-access-code-grant:
+    path: "/swagger/index.html"
   show-actuator:
-  enable-spring-security:
 
 cloudinary:
   url:
@@ -38,6 +35,15 @@ openai:
   key:
 
 redis:
-  host:
-  port:
+  host: localhost
+  port: 6380
   password:
+
+spring:
+  flyway:
+    url:
+    locations:
+spring:
+  flyway:
+    url:
+    locations:
