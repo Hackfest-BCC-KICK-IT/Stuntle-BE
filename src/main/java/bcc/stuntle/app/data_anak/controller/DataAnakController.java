@@ -170,4 +170,26 @@ public class DataAnakController {
     ){
         return this.service.get(id);
     }
+
+    @Operation(description = "mendapatkan list data anak by ortu id untuk faskes")
+    @ApiResponses({
+            @ApiResponse(
+                    description = "sukses mendapatkan data anak",
+                    useReturnTypeSchema = true,
+                    responseCode = "200"
+            )
+    })
+    @GetMapping(
+            value = "/list/faskes",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<List<DataAnak>>>> getListByOrtuIdForFaskes(
+            @RequestParam("id") Long id,
+            @RequestParam(value = "page", defaultValue = "0") Integer page,
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit
+    ){
+        return this.service.getList(id, PageRequest.of(page, limit));
+    }
 }

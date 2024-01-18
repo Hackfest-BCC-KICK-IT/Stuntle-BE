@@ -27,7 +27,7 @@ public class DataPemeriksaanAnak {
 
     private String namaPemeriksa;
 
-    private Integer umurAnak;
+    private String umurAnak;
 
     private Double tinggiAnak;
 

@@ -28,7 +28,7 @@ public class DataPemeriksaanAnakDto {
 
             @NotNull(message = "umur anak harus ada")
             @PositiveOrZero(message = "umur anak tidak boleh negative")
-            Integer umurAnak,
+            String umurAnak,
 
             @NotNull(message = "tinggi anak harus ada")
             @PositiveOrZero(message = "tinggi anak tidak boleh negative")

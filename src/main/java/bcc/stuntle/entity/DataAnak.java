@@ -3,10 +3,12 @@ package bcc.stuntle.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Table("data_anak")
 @NoArgsConstructor
@@ -47,4 +49,16 @@ public class DataAnak {
 
     @Column("fk_ortu_id")
     private Long fkOrtuId;
+
+    @Transient
+    private List<Long> fkDataPemeriksaanAnak;
+
+    @Transient
+    private String usiaAnak;
+
+    @Transient
+    private String namaAyah;
+
+    @Transient
+    private String namaIbu;
 }

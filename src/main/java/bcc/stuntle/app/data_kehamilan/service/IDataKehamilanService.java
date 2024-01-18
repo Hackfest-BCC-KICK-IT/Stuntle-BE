@@ -22,4 +22,5 @@ public interface IDataKehamilanService {
     Mono<ResponseEntity<Response<List<DataKehamilan>>>> getList(Long ortuId, Pageable pageable);
     Mono<ResponseEntity<Response<Void>>> update(Long dataKehamilanId, DataKehamilanDto.Update dto);
     Mono<ResponseEntity<Response<Void>>> delete(Long dataKehamilanId);
+    Mono<List<DataKehamilan>> getListByFaskes(Long faskesId);
 }

@@ -5,6 +5,7 @@ import bcc.stuntle.dto.DataKehamilanDto;
 import bcc.stuntle.entity.DataKehamilan;
 import bcc.stuntle.entity.Response;
 import bcc.stuntle.security.authentication.JwtAuthentication;
+import bcc.stuntle.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -120,6 +122,28 @@ public class DataKehamilanController {
         return this.service.getList(Long.parseLong(jwtAuthentication.getId()), PageRequest.of(page, limit));
     }
 
+    @Operation(description = "mendapatkan list data kehamilan by id orangtua untuk faskes")
+    @ApiResponses({
+            @ApiResponse(
+                    description = "sukses mendapatkan list data kehamilan",
+                    useReturnTypeSchema = true,
+                    responseCode = "200"
+            )
+    })
+    @GetMapping(
+            value = "/faskes/list",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<List<DataKehamilan>>>> getListByOrtuIdForFaskes(
+            @RequestParam("id") Long ortuId,
+            @RequestParam("page") Integer page,
+            @RequestParam("limit") Integer limit
+    ){
+        return this.service.getList(ortuId, PageRequest.of(page, limit));
+    }
+
     @Operation(description = "mengupdate data kehamilan")
     @Parameter(name = "id", description = "data kehamilan id",in = ParameterIn.PATH)
     @ApiResponses({
@@ -164,5 +188,28 @@ public class DataKehamilanController {
             @PathVariable("id") Long dataKehamilanId
     ){
         return this.service.delete(dataKehamilanId);
+    }
+
+    @Operation(description = "mendapatkan data kehamilan orangtua yang akan dicek faskes")
+    @GetMapping(
+            value = "/faskes",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Mono<ResponseEntity<Response<List<DataKehamilan>>>> getListByFaskes(
+            JwtAuthentication<String> jwtAuthentication
+    ){
+        return this.service.getListByFaskes(Long.parseLong(jwtAuthentication.getId()))
+                .map((data) ->
+                    ResponseUtil
+                            .sendResponse(
+                                    HttpStatus.OK,
+                                    Response
+                                            .<List<DataKehamilan>>builder()
+                                            .success(true)
+                                            .message("sukses mendapatkan data kehamilan orangtua yang terikat dengan faskes")
+                                            .data(data)
+                                            .build()
+                            )
+                );
     }
 }
