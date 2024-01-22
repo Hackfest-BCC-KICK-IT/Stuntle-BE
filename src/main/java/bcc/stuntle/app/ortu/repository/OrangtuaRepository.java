@@ -98,7 +98,10 @@ public class OrangtuaRepository {
                     log.info("redis result null on OrangtuaRepository.findId");
                     return this.repository
                             .findById(id)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data orangtua tidak ditemukan")))
+                            .switchIfEmpty(Mono.defer(() -> {
+                                log.info("id not found with value: {}", id);
+                                return Mono.empty();
+                            }))
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
                 .flatMap((ortuStr) -> {
