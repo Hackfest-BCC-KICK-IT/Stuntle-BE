@@ -25,7 +25,7 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/pemeriksaan/kehamilan")
-@PreAuthorize("hasRole('FASKES')")
+@PreAuthorize("hasAnyRole('ORANGTUA', FASKES')")
 public class PemeriksaanKehamilanController {
 
     @Autowired
