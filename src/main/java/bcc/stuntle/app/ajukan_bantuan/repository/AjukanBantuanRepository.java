@@ -67,7 +67,9 @@ public class AjukanBantuanRepository {
                                                 .and(
                                                         Criteria.where("status").is(statusAjuan)
                                                 )
-                                ).with(pageable);
+                                )
+                                        .limit(pageable.getPageSize())
+                                        .offset(pageable.getOffset());
                                 return this.template
                                         .select(query, AjukanBantuan.class)
                                         .collectList()

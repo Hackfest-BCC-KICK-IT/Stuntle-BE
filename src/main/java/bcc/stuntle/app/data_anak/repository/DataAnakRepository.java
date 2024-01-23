@@ -62,7 +62,6 @@ public class DataAnakRepository {
                     log.info("redis result null on DataAnakRepository.get(example)");
                     return this.repository
                             .findOne(example)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
                 .flatMap((dataAnakStr) -> {
@@ -80,7 +79,7 @@ public class DataAnakRepository {
         return ops.get(key)
                 .switchIfEmpty(Mono.from(Flux.defer(() -> {
                     log.info("redis result null on DataAnakRepository.getList(example)");
-                    return this.repository.findAll(example).switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
+                    return this.repository.findAll(example)
                             .map(ObjectMapperUtils::writeValueAsString);
                 } )))
                 .flatMapMany((dataAnakStr) -> {
@@ -111,7 +110,6 @@ public class DataAnakRepository {
                     log.info("redis result null on DataAnakRepository.getList(id, pageable)");
                     return this.template
                             .select(query, DataAnak.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
                             .flatMap((dataAnak) -> {
                                 var pemeriksaanAnakIds = this.pemeriksaanAnakRepository
                                         .getList(
@@ -156,13 +154,14 @@ public class DataAnakRepository {
                         .and(
                                 Criteria.where("deleted_at").isNull()
                         )
-        ).with(page);
+        )
+                .limit(page.getPageSize())
+                .offset(page.getOffset());
         return ops.get(key)
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("redis result null on DataAnakRepository.getList(ortuIds, page)");
                     return this.template
                             .select(query, DataAnak.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)
@@ -200,7 +199,6 @@ public class DataAnakRepository {
                     log.info("redis result null on DataAnakRepository.getList(namaOrtu, ortuIds, pageable)");
                     return this.template
                             .select(query, DataAnak.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data anak tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)

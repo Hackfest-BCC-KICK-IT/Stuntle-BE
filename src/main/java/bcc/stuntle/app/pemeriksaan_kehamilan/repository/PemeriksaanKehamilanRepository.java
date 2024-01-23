@@ -116,12 +116,14 @@ public class PemeriksaanKehamilanRepository {
         return this.repository.findAll(example).collectList();
     }
 
-    public Mono<List<DataPemeriksaanKehamilan>> findByIds(List<Long> ids){
+    public Mono<List<DataPemeriksaanKehamilan>> getList(List<Long> ids, Pageable page){
         var query = Query
                 .query(
                         Criteria.where("fk_data_kehamilan")
                                 .in(ids)
-                );
+                )
+                .offset(page.getOffset())
+                .limit(page.getPageSize());
         return this.template
                 .select(query, DataPemeriksaanKehamilan.class)
                 .collectList();

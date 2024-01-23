@@ -68,7 +68,6 @@ public class DataKehamilanRepository {
                     return  this
                             .dataKehamilanRepository
                             .findOne(example)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data kehamilan tidak ditemukan")))
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
                 .flatMap((dataKehamilanStr) -> {
@@ -112,7 +111,6 @@ public class DataKehamilanRepository {
                     log.info("redis result null on DataKehamilanRepository.count(ids, fkFaskesId)");
                     return this.template
                             .select(query, DataKehamilan.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data kehamilan tidak ditemukan")))
                             .collectList()
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
@@ -135,6 +133,56 @@ public class DataKehamilanRepository {
         return ops.get(key)
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("redis result null on DataKehamilanRepository.getList(ortuId, pageable)");
+                    return this.template
+                            .select(query, DataKehamilan.class)
+                            .flatMap((v) -> {
+                                var pemeriksaanIds = this.pemeriksaanKehamilanRepository
+                                        .findByExample(
+                                                Example
+                                                        .of(
+                                                                DataPemeriksaanKehamilan
+                                                                        .builder()
+                                                                        .fkDataKehamilan(v.getId())
+                                                                        .build()
+                                                        )
+                                        )
+                                        .map((pemeriksaanKehamilan) -> pemeriksaanKehamilan.stream().map(DataPemeriksaanKehamilan::getId).toList());
+                                return pemeriksaanIds.map((ids) -> {
+                                    v.setFkPemeriksaanIds(ids);
+                                    return v;
+                                });
+                            })
+                            .collectList()
+                            .zipWith(this.dataKehamilanRepository.count())
+                            .map(Tuple2::toList)
+                            .map(ObjectMapperUtils::writeValueAsString);
+                }))
+                .flatMap((listStr) -> {
+
+                    var list = ObjectMapperUtils.readListValue(listStr, Object.class);
+
+                    var tempT1 = list.get(0);
+                    var t1 = ObjectMapperUtils.mapper.convertValue(tempT1, new TypeReference<List<DataKehamilan>>() {});
+
+                    var t2 = (Integer) list.get(1);
+
+                    return ops.set(key, listStr, Duration.ofMinutes(1))
+                            .then(Mono.just(new PageImpl<>(t1, pageable, t2)));
+                });
+    }
+
+    public Mono<Page<DataKehamilan>> getList(List<Long> ortuIds, Pageable pageable){
+        var ops = this.redisTemplate.opsForValue();
+        var key = String.format(DataKehamilanRedisConstant.GET_LIST, ortuIds, PageableUtils.toString(pageable));
+        Query query = Query.query(
+                Criteria.where("fk_ortu_id").in(ortuIds)
+                        .and(
+                                Criteria.where("deleted_at").isNull()
+                        )
+        ).offset(pageable.getOffset()).limit(pageable.getPageSize());
+        return ops.get(key)
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.info("redis result null on DataKehamilanRepository.getList(ortuIds, pageable)");
                     return this.template
                             .select(query, DataKehamilan.class)
                             .flatMap((v) -> {
