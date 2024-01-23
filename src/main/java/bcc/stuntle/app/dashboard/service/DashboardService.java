@@ -13,6 +13,7 @@ import bcc.stuntle.util.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -59,47 +60,86 @@ public class DashboardService implements IDashboardService{
     public Mono<ResponseEntity<Response<Dashboard>>> getDashboard(Long faskesId) {
 
         var fetchOrangtuaFaskes = this.ortuFaskesRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("fetchOrangtuaFaskes err: {}", e.getMessage());
+                })
                 .map(Page::getContent);
 
         var fetchResepMakanan = this.resepMakananRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("fetchResepMakanan err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var fetchArtikel = this.artikelRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("fetchArtikel err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var ajukanBantuanDiproses = this.ajukanBantuanRepository
-                .getListFaskes(faskesId, StatusAjuan.diproses.name(), Pageable.unpaged())
+                .getListFaskes(faskesId, StatusAjuan.diproses.name(), PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("ajukanBantuanDiproses err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var ajukanBantuanDiterima = this.ajukanBantuanRepository
-                .getListFaskes(faskesId, StatusAjuan.sukses.name(), Pageable.unpaged())
+                .getListFaskes(faskesId, StatusAjuan.sukses.name(), PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("ajukanBantuanDiterima err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var ajukanBantuanDitolak = this.ajukanBantuanRepository
-                .getListFaskes(faskesId, StatusAjuan.gagal.name(), Pageable.unpaged())
+                .getListFaskes(faskesId, StatusAjuan.gagal.name(), PageRequest.of(0, 1000))
+                .doOnError((e) -> {
+                    log.error("ajukanBantuanDitolak err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var dataAnakTerdata = fetchOrangtuaFaskes
                 .map((listOrtuFaskes) -> listOrtuFaskes.stream().map((ortuFaskes) -> ortuFaskes.getFkOrtuId()).toList())
-                .flatMap((ortuId) -> this.dataAnakRepository.getList(ortuId, Pageable.unpaged()))
+                .flatMap((ortuId) -> this.dataAnakRepository.getList(ortuId, PageRequest.of(0, 1000)))
+                .doOnError((e) -> {
+                    log.error("dataAnakTerdata err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var dataPemeriksaanAnak = dataAnakTerdata
                 .map((listDataAnak) -> listDataAnak.stream().map(DataAnak::getId).toList())
-                .flatMap((dataAnakIds) -> this.pemeriksaanAnakRepository.getList(dataAnakIds, Pageable.unpaged()))
+                .flatMap((dataAnakIds) -> this.pemeriksaanAnakRepository.getList(dataAnakIds, PageRequest.of(0, 1000)))
+                .doOnError((e) -> {
+                    log.error("dataPemeriksaanAnak err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var dataBayiTerdata = fetchOrangtuaFaskes
                 .map((listOrtuFaskes) -> listOrtuFaskes.stream().map((ortuFaskes) -> ortuFaskes.getFkOrtuId()).toList())
-                .flatMap((ortuId) -> this.dataKehamilanRepository.getList(ortuId, Pageable.unpaged()))
+                .flatMap((ortuId) -> this.dataKehamilanRepository.getList(ortuId, PageRequest.of(0, 1000)))
+                .doOnError((e) -> {
+                    log.error("dataBayiTerdata err: {}", e.getMessage());
+                })
+                .switchIfEmpty(Mono.just(new PageImpl<>(new ArrayList<>(List.of()))))
                 .map(Page::getContent);
 
         var dataPemeriksaanBayi = dataBayiTerdata
                 .map((listDataAnak) -> listDataAnak.stream().map(DataKehamilan::getId).toList())
-                .flatMap((dataKehamilanIds) -> this.pemeriksaanKehamilanRepository.getList(dataKehamilanIds, Pageable.unpaged()));
+                .flatMap((dataKehamilanIds) -> this.pemeriksaanKehamilanRepository.getList(dataKehamilanIds, PageRequest.of(0, 1000)))
+                .switchIfEmpty(Mono.just(new ArrayList<>(List.of())))
+                .doOnError((e) -> {
+                    log.error("dataPemeriksaanBayi err: {}", e.getMessage());
+                });
 
         var zip = Mono.zip(
                 fetchOrangtuaFaskes,
@@ -200,7 +240,13 @@ public class DashboardService implements IDashboardService{
     }
 
     private List<DataPemeriksaanAnak> filterLatestDataPemeriksaanAnak(List<DataPemeriksaanAnak> data, String statusAnak){
-        final var listData = new ArrayList<DataPemeriksaanAnak>();
+
+        if(data.isEmpty()){
+            log.info("empty data");
+            return data;
+        }
+
+        var listData = new ArrayList<DataPemeriksaanAnak>();
 
         var map = new LinkedHashMap<Long, List<DataPemeriksaanAnak>>();
 
@@ -235,9 +281,11 @@ public class DashboardService implements IDashboardService{
                         })
                         .toList();
 
-                log.info("sorted: {}", sorted);
+                log.info("sorted data anak: {}", sorted);
 
-                listData.add(sorted.get(0));
+                if(!sorted.isEmpty()){
+                    listData.add(sorted.get(0));
+                }
             }
         });
 
@@ -245,7 +293,13 @@ public class DashboardService implements IDashboardService{
     }
 
     private List<DataPemeriksaanKehamilan> filterLatestDataPemeriksaanKehamilan(List<DataPemeriksaanKehamilan> data, String statusKehamilan){
-        final var listData = new ArrayList<DataPemeriksaanKehamilan>();
+
+        if(data.isEmpty()){
+            log.info("empty data");
+            return data;
+        }
+
+        var listData = new ArrayList<DataPemeriksaanKehamilan>();
 
         var map = new LinkedHashMap<Long, List<DataPemeriksaanKehamilan>>();
 
@@ -280,9 +334,11 @@ public class DashboardService implements IDashboardService{
                         })
                         .toList();
 
-                log.info("sorted: {}", sorted);
+                log.info("sorted data kehamilan: {}", sorted);
 
-                listData.add(sorted.get(0));
+                if(!sorted.isEmpty()){
+                    listData.add(sorted.get(0));
+                }
             }
         });
 

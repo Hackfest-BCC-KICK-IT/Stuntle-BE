@@ -68,7 +68,6 @@ public class ArtikelRepository {
                     return this
                             .template
                             .select(query, Artikel.class)
-                            .switchIfEmpty(Mono.just(Artikel.builder().build()))
                             .collectList()
                             .zipWith(this.repository.count())
                             .flatMap((d) -> Mono.fromCallable(() -> new PageImpl<>(d.getT1(), pageable, d.getT2())))

@@ -106,7 +106,7 @@ public class PemeriksaanAnakRepository {
                 .flatMap((listStr) -> {
                     var listObj = ObjectMapperUtils.readListValue(listStr, Object.class);
                     var t1 = ObjectMapperUtils.mapper.convertValue(listObj.get(0), new TypeReference<List<DataPemeriksaanAnak>>() {});
-                    var t2 = (Long) listObj.get(1);
+                    var t2 = (Integer) listObj.get(1);
                     return ops.set(key, listStr, Duration.ofMinutes(1))
                             .then(Mono.just(new PageImpl<>(t1, pageable, t2)));
                 });
