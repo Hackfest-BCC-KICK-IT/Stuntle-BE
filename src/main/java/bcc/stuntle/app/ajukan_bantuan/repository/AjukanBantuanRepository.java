@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -50,7 +51,7 @@ public class AjukanBantuanRepository {
         var ops = this.redisTemplate.opsForValue();
         var pageableStr = PageableUtils.toString(pageable);
         return this.ortuFaskesRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
                 .map(Page::getContent)
                 .map(v -> v.stream().parallel().map(OrangtuaFaskes::getFkOrtuId).toList())
                 .flatMap((fkOrtuIds) -> {
@@ -82,7 +83,6 @@ public class AjukanBantuanRepository {
                                         .then(Mono.just(ajukanBantuan));
                             });
                 })
-                .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data ajukan bantuan tidak ditemukan")))
                 .zipWith(this.repository.count())
                 .map((list) -> new PageImpl<>(list.getT1(), pageable, list.getT2()));
     }
@@ -152,7 +152,7 @@ public class AjukanBantuanRepository {
 
     public Mono<List<AjukanBantuan>> count(Long faskesId){
         return this.ortuFaskesRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
                 .map(Page::getContent)
                 .map((res) -> res.stream().parallel().map(OrangtuaFaskes::getFkOrtuId).toList())
                 .flatMap((ortuIds) -> {
