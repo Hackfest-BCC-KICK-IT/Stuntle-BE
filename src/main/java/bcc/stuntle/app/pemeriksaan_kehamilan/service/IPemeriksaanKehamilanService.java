@@ -12,4 +12,6 @@ import java.util.List;
 public interface IPemeriksaanKehamilanService {
     Mono<ResponseEntity<Response<DataPemeriksaanKehamilan>>> create(Long ortuId, Long faskesId, Long dataKehamilanId, DataPemeriksaanKehamilanDto.Create dto);
     Mono<ResponseEntity<Response<List<DataPemeriksaanKehamilan>>>> getList(Long ortuId, Long faskesId, Long dataKehamilanId, Pageable page);
+    Mono<ResponseEntity<Response<List<DataPemeriksaanKehamilan>>>> getList(List<Long> pemeriksaanIds);
+    Mono<ResponseEntity<Response<DataPemeriksaanKehamilan>>> get(Long id);
 }

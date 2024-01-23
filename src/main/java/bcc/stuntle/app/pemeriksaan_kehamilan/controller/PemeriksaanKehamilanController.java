@@ -71,4 +71,31 @@ public class PemeriksaanKehamilanController {
     ){
         return this.service.getList(id, Long.parseLong(jwtAuth.getId()), dataKehamilanId, PageRequest.of(page, limit));
     }
+
+    @Operation(summary = "mendapatkan list data pemeriksaan kehamilan(mobile)")
+    @GetMapping(
+            value = "/ortu/list",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<List<DataPemeriksaanKehamilan>>>> getList(
+            @RequestParam("id") List<Long> id
+    ){
+        return this.service.getList(id);
+    }
+
+    @Operation(summary = "mendapatkan data pemeriksaan kehamilan by id pemeriksaan(mobile)")
+    @GetMapping(
+            value = "/ortu/{id}",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<DataPemeriksaanKehamilan>>> get(
+            @PathVariable("id") Long id
+    ){
+        return this.service
+                .get(id);
+    }
 }

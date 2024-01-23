@@ -12,13 +12,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@RestController("/dashboard")
+@RestController
 @Tag(name = "Dashboard")
 @SecurityRequirement(name = "bearerAuth")
 @PreAuthorize("hasRole('FASKES')")
+@RequestMapping("/dashboard")
 public class DashboardController {
 
     @Autowired

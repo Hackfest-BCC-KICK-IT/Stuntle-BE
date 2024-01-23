@@ -26,6 +26,7 @@ springdoc:
   use-fqn: true
   swagger-ui:
     path: "/swagger/index.html"
+    request-timeout: 60000 # one minute
   show-actuator:
 
 cloudinary:
