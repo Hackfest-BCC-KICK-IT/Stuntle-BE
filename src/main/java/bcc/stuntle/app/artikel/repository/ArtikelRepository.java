@@ -59,7 +59,9 @@ public class ArtikelRepository {
                                                 Criteria.where("deleted_at").isNull()
                                         )
                         )
-                ).with(pageable);
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize());
         return ops.get(key)
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("redis result null on ArtikelRepository.getList(faskesId, page)");
@@ -114,7 +116,6 @@ public class ArtikelRepository {
                     log.info("redis result null on ArtikelRepository.getList(judulArtikel, pageable)");
                     return this.template
                             .select(query, Artikel.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data artikel tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map((m) -> new PageImpl<>(m.getT1(), pageable, m.getT2()))
@@ -137,7 +138,6 @@ public class ArtikelRepository {
                     log.info("redis result null on ArtikelRepository.getList(pageable)");
                     return this.template
                             .select(query, Artikel.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data artikel tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map((t) -> new PageImpl<>(t.getT1(), pageable, t.getT2()))

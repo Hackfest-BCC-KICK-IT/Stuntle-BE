@@ -27,7 +27,6 @@ public class DataPemeriksaanAnakDto {
             String namaPemeriksa,
 
             @NotNull(message = "umur anak harus ada")
-            @PositiveOrZero(message = "umur anak tidak boleh negative")
             String umurAnak,
 
             @NotNull(message = "tinggi anak harus ada")

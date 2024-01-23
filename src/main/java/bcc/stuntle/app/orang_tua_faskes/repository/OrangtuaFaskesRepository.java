@@ -58,8 +58,10 @@ public class OrangtuaFaskesRepository {
                             CriteriaDefinition.from(
                                     Criteria.where("fk_faskes_id").is(faskesId)
                             )
-                    ).with(pageable);
-                    return Mono.from(this.template.select(query, OrangtuaFaskes.class).switchIfEmpty(Mono.error(new DataTidakDitemukanException("data orangtua faskes tidak ditemukan"))).collectList())
+                    )
+                            .limit(pageable.getPageSize())
+                            .offset(pageable.getOffset());
+                    return Mono.from(this.template.select(query, OrangtuaFaskes.class).collectList())
                             .zipWith(this.repository.count())
                             .flatMap((t) -> Mono.fromCallable(() -> new PageImpl<>(t.getT1(), pageable, t.getT2())))
                             .map(ObjectMapperUtils::writeValueAsString);
@@ -107,7 +109,6 @@ public class OrangtuaFaskesRepository {
                                     this
                                             .template
                                             .select(query, OrangtuaFaskes.class)
-                                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data orangtua faskes tidak ditemukan")))
                                             .collectList())
                             .zipWith(this.repository.count())
                             .flatMap((t) -> Mono.fromCallable(() -> new PageImpl<>(t.getT1(), pageable, t.getT2())))
@@ -132,12 +133,10 @@ public class OrangtuaFaskesRepository {
                     return this
                             .repository
                             .findAllById(id)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data orangtua faskes tidak ditemukan")))
                             .collectList()
                             .map(ObjectMapperUtils::writeValueAsString);
                 }))
                 .flatMap((listStr) -> {
-                    log.info("masuk");
                     var list = ObjectMapperUtils.readListValue(listStr, OrangtuaFaskes.class);
                     var flux = Flux.fromStream(list.stream());
                     return flux.flatMap((ortuFaskes) -> this.ortuRepository.findById(ortuFaskes.getFkOrtuId()).map((ortu) -> {

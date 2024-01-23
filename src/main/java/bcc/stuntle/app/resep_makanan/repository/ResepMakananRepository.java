@@ -19,6 +19,7 @@ import org.springframework.data.relational.core.query.Criteria;
 import org.springframework.data.relational.core.query.CriteriaDefinition;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
@@ -64,7 +65,6 @@ public class ResepMakananRepository {
                     log.info("redis result null on ResepMakananRepository.getList");
                     return this.template
                             .select(query, ResepMakanan.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data resep makanan tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)
@@ -92,7 +92,6 @@ public class ResepMakananRepository {
                     log.info("redis result null on ResepMakananRepository.getList(resepMakanan, pageable)");
                     return this.template
                             .select(finQuery, ResepMakanan.class)
-                            .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data resep makanan tidak ditemukan")))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)
@@ -115,7 +114,6 @@ public class ResepMakananRepository {
                 .then(
                         this.repository
                                 .findOne(Example.of(ResepMakanan.builder().id(id).build()))
-                                .switchIfEmpty(Mono.error(new DataTidakDitemukanException("data resep makanan tidak ditemukan")))
                                 .flatMap((e) -> {
                                     e.setDeletedAt(LocalDate.now());
                                     return this.repository.save(e);

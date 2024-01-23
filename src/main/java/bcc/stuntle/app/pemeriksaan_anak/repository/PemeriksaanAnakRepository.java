@@ -68,7 +68,6 @@ public class PemeriksaanAnakRepository {
                     return Mono.from(this
                             .template
                             .select(query, DataPemeriksaanAnak.class)
-                            .switchIfEmpty(Flux.fromIterable(List.of()))
                             .collectList()
                             .zipWith(this.repository.count())
                             .map(Tuple2::toList)
@@ -91,7 +90,7 @@ public class PemeriksaanAnakRepository {
                         .and(
                                 Criteria.where("deleted_at").isNull()
                         )
-        ).with(pageable);
+        ).offset(pageable.getOffset()).limit(pageable.getPageSize());
         var key = String.format(PemeriksaanAnakRedisConstant.GET_LIST_IDS, dataAnakIds, PageableUtils.toString(pageable));
         return ops.get(key)
                 .switchIfEmpty(Mono.defer(() -> {
