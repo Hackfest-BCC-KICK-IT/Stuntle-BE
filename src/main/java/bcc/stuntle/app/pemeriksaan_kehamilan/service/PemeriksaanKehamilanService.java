@@ -37,7 +37,17 @@ public class PemeriksaanKehamilanService implements IPemeriksaanKehamilanService
                                         .message("sukses membuat data pemeriksaan kehamilan")
                                         .success(true)
                                         .build()
-                        )));
+                        )))
+                .switchIfEmpty(Mono.just(
+                        ResponseUtil.sendResponse(
+                                HttpStatus.OK,
+                                Response
+                                        .<DataPemeriksaanKehamilan>builder()
+                                        .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                        .success(true)
+                                        .build()
+                        )
+                ));
     }
 
     @Override
@@ -61,6 +71,71 @@ public class PemeriksaanKehamilanService implements IPemeriksaanKehamilanService
                                                 .build()
                                 )
                                 .build()
-                )));
+                )))
+                .switchIfEmpty(Mono.just(
+                        ResponseUtil.sendResponse(
+                                HttpStatus.OK,
+                                Response
+                                        .<List<DataPemeriksaanKehamilan>>builder()
+                                        .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                        .success(true)
+                                        .build()
+                        )
+                ));
+    }
+
+    @Override
+    public Mono<ResponseEntity<Response<List<DataPemeriksaanKehamilan>>>> getList(List<Long> pemeriksaanIds) {
+        return this
+                .repository
+                .getList(pemeriksaanIds)
+                .map((d) -> {
+                    return ResponseUtil.sendResponse(
+                            HttpStatus.OK,
+                            Response
+                                    .<List<DataPemeriksaanKehamilan>>builder()
+                                    .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                    .success(true)
+                                    .data(d)
+                                    .build()
+                    );
+                })
+                .switchIfEmpty(Mono.just(
+                        ResponseUtil.sendResponse(
+                                HttpStatus.OK,
+                                Response
+                                        .<List<DataPemeriksaanKehamilan>>builder()
+                                        .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                        .success(true)
+                                        .build()
+                        )
+                ));
+    }
+
+    @Override
+    public Mono<ResponseEntity<Response<DataPemeriksaanKehamilan>>> get(Long id) {
+        return this.repository
+                .findById(id)
+                .map((d) -> {
+                    return ResponseUtil.sendResponse(
+                            HttpStatus.OK,
+                            Response
+                                    .<DataPemeriksaanKehamilan>builder()
+                                    .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                    .success(true)
+                                    .data(d)
+                                    .build()
+                    );
+                })
+                .switchIfEmpty(Mono.just(
+                        ResponseUtil.sendResponse(
+                                HttpStatus.OK,
+                                Response
+                                        .<DataPemeriksaanKehamilan>builder()
+                                        .message("sukses mendapatkan data pemeriksaan kehamilan")
+                                        .success(true)
+                                        .build()
+                        )
+                ));
     }
 }

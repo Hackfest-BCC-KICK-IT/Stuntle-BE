@@ -11,10 +11,7 @@ import bcc.stuntle.util.PageableUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.relational.core.query.Criteria;
@@ -223,7 +220,7 @@ public class DataKehamilanRepository {
 
     public Mono<List<DataKehamilan>> getListByFaskes(Long faskesId){
         return this.ortuFaskesRepository
-                .getList(faskesId, Pageable.unpaged())
+                .getList(faskesId, PageRequest.of(0, 1000))
                 .map(Page::getContent)
                 .map((ortuFaskes) -> ortuFaskes.stream().map(OrangtuaFaskes::getFkOrtuId).toList())
                 .flatMap((ortuIds) -> {

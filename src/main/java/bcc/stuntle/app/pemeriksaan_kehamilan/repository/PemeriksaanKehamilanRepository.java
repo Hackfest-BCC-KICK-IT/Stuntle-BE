@@ -116,6 +116,18 @@ public class PemeriksaanKehamilanRepository {
         return this.repository.findAll(example).collectList();
     }
 
+    public Mono<DataPemeriksaanKehamilan> findById(Long id){
+        return this
+                .repository
+                .findById(id);
+    }
+
+    public Mono<List<DataPemeriksaanKehamilan>> getList(List<Long> ids){
+        return this.repository
+                .findAllById(ids)
+                .collectList();
+    }
+
     public Mono<List<DataPemeriksaanKehamilan>> getList(List<Long> ids, Pageable page){
         var query = Query
                 .query(
