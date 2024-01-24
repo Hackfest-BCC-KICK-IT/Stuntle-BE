@@ -138,6 +138,7 @@ public class ChatService implements IChatService{
     }
 
     @Override
+    @SneakyThrows
     public Mono<ResponseEntity<Response<OpenApiClientResponse>>> get(Long ortuId) {
         var ops = this.redisTemplate.opsForValue();
         var key = String.format(ChatRedisConstant.GET_ORTU_ID, ortuId);
@@ -154,7 +155,7 @@ public class ChatService implements IChatService{
                                 List<ChatMessage> listMessage = v.getT1();
                                 List<ChatResponse> listResponse = v.getT2();
                                 Map<LocalDate, List<ChatMessage>> mapMessage = new LinkedHashMap<>();
-                                Map<LocalDate, List<ChatResponse>> mapResponse = new LinkedHashMap<>();
+                                Map<LocalDate, List<ResponseMessage>> mapResponse = new LinkedHashMap<>();
                                 listMessage.forEach((message) -> {
                                     var value = mapMessage.get(message.getCreatedAt());
                                     if(value == null){
@@ -167,12 +168,17 @@ public class ChatService implements IChatService{
                                 });
                                 listResponse.forEach((response) -> {
                                     var value = mapResponse.get(response.getCreatedAt());
+                                    var d = ObjectMapperUtils.readValue(response.getResponse(), OpenApiCreateMessage.class);
+                                    var responseMessage = ResponseMessage
+                                            .builder()
+                                            .message(d.getMessage())
+                                            .build();
                                     if(value == null){
-                                        var mapListValue = new ArrayList<ChatResponse>();
-                                        mapListValue.add(response);
+                                        var mapListValue = new ArrayList<ResponseMessage>();
+                                        mapListValue.add(responseMessage);
                                         mapResponse.put(response.getCreatedAt(), mapListValue);
                                     } else {
-                                        value.add(response);
+                                        value.add(responseMessage);
                                     }
                                 });
                                 return List.of(mapMessage, mapResponse);

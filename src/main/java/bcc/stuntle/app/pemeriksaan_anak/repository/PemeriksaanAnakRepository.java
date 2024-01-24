@@ -115,4 +115,15 @@ public class PemeriksaanAnakRepository {
     public Mono<List<DataPemeriksaanAnak>> getList(Example<DataPemeriksaanAnak> example){
         return this.repository.findAll(example).collectList();
     }
+
+    public Mono<List<DataPemeriksaanAnak>> getList(List<Long> ids){
+        return this.repository
+                .findAllById(ids)
+                .collectList();
+    }
+
+    public Mono<DataPemeriksaanAnak> findById(Long id){
+        return this.repository
+                .findById(id);
+    }
 }

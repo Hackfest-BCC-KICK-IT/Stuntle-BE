@@ -25,7 +25,7 @@ import java.util.List;
 @RequestMapping("/pemeriksaan/anak")
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Pemeriksaan Anak")
-@PreAuthorize("hasRole('FASKES')")
+@PreAuthorize("hasAnyRole('FASKES', 'ORANGTUA')")
 public class PemeriksaanAnakController {
 
     @Autowired
@@ -69,5 +69,31 @@ public class PemeriksaanAnakController {
             JwtAuthentication<String> jwtAuth
     ){
         return this.service.getList(ortuId, Long.parseLong(jwtAuth.getId()), dataAnakId, PageRequest.of(page, limit));
+    }
+
+    @Operation(summary = "mendapatkan data pemeriksaan anak multiple ids(mobile)")
+    @GetMapping(
+            value = "/ortu/list",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<List<DataPemeriksaanAnak>>>> getList(
+            @RequestParam("ids") List<Long> ids
+    ){
+        return this.service.getList(ids);
+    }
+
+    @Operation(summary = "mendapatkan data pemeriksaan anak by id(mobile)")
+    @GetMapping(
+            value = "/ortu/{id}",
+            produces = {
+                    MediaType.APPLICATION_JSON_VALUE
+            }
+    )
+    public Mono<ResponseEntity<Response<DataPemeriksaanAnak>>> getList(
+            @PathVariable("id") Long id
+    ){
+        return this.service.get(id);
     }
 }

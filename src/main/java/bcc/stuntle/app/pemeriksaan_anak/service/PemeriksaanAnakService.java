@@ -71,6 +71,33 @@ public class PemeriksaanAnakService implements IPemeriksaanAnakService{
 
     @Override
     public Mono<ResponseEntity<Response<List<DataPemeriksaanAnak>>>> getList(List<Long> pemeriksaanIds) {
-        return null;
+        return this
+                .repository
+                .getList(pemeriksaanIds)
+                .map((d) -> ResponseUtil
+                        .sendResponse(
+                                HttpStatus.OK,
+                                Response
+                                        .<List<DataPemeriksaanAnak>>builder()
+                                        .data(d)
+                                        .success(true)
+                                        .message("sukses mendapatkan data pemeriksaan anak")
+                                        .build()
+                ));
+    }
+
+    @Override
+    public Mono<ResponseEntity<Response<DataPemeriksaanAnak>>> get(Long id) {
+        return this.repository
+                .findById(id)
+                .map((d) -> ResponseUtil.sendResponse(
+                        HttpStatus.CREATED,
+                        Response
+                                .<DataPemeriksaanAnak>builder()
+                                .message("sukses mendapatkan data pemeriksaan anak")
+                                .success(true)
+                                .data(d)
+                                .build()
+                ));
     }
 }
