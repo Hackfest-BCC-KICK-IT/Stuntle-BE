@@ -68,4 +68,9 @@ public class PemeriksaanAnakService implements IPemeriksaanAnakService{
                         )))
         );
     }
+
+    @Override
+    public Mono<ResponseEntity<Response<List<DataPemeriksaanAnak>>>> getList(List<Long> pemeriksaanIds) {
+        return null;
+    }
 }

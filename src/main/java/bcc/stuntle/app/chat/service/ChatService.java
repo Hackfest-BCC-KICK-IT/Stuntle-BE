@@ -9,6 +9,7 @@ import bcc.stuntle.constant.SecurityConstant;
 import bcc.stuntle.entity.*;
 import bcc.stuntle.util.ObjectMapperUtils;
 import bcc.stuntle.util.ResponseUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,8 @@ public class ChatService implements IChatService{
     private String apiKey;
 
     @Override
-    public Mono<ResponseEntity<Response<OpenApiResponse>>> create(Long ortuId, String message) {
+    @SneakyThrows
+    public Mono<ResponseEntity<Response<OpenApiCreateMessage>>> create(Long ortuId, String message) {
         OpenApiRequest req = OpenApiRequest
                 .builder()
                 .model(OpenApiConstant.MODEL)
@@ -72,6 +74,7 @@ public class ChatService implements IChatService{
                 .retrieve()
                 .bodyToMono(OpenApiResponse.class)
                 .flatMap((d) -> {
+                    var tempResponse = d.getChoices().get(0).message().content();
                     ChatMessage chatMessage = ChatMessage
                             .builder()
                             .message(message)
@@ -80,10 +83,29 @@ public class ChatService implements IChatService{
                             .build();
                     ChatResponse chatResponse = ChatResponse
                             .builder()
-                            .response(d.getChoices().get(0).message().content())
+                            .response(tempResponse)
                             .fkOrtuId(ortuId)
                             .createdAt(LocalDate.now())
                             .build();
+
+                    var response = ObjectMapperUtils.readValue(tempResponse, OpenApiCreateMessage.class);
+
+                    if(response.getKeywordType() != null){
+                        if(response.getKeywordType().equals("keywordBayi")){
+                            response.setMessage(
+                                    response.getMessage() + "\n" + """
+                                    Untuk memastikannya lebih lanjut, Anda dapat membaca panduannya pada menu artikel dengan mencari keyword "Tanda Bahaya Kehamilan" dan apabila ciri-ciri dari hal yang anda rasakan saat ini terdapat dalam artikel, segera meminta pertolongan melalui orang terdekat disekitar Anda, ataupun melalui fitur ajukan bantuan    
+                                    """
+                            );
+                        } else if(response.getKeywordType().equals("keywordAnak")){
+                            response.setMessage(
+                                    response.getMessage() + "\n" + """
+                                    Untuk memastikannya lebih lanjut, Anda dapat membaca panduannya pada menu artikel dengan mencari keyword "Gangguan Tumbuh Kembang Anak" dan apabila ciri-ciri dari anak Anda saat ini terdapat dalam artikel, segera meminta pertolongan melalui orang terdekat disekitar Anda, ataupun melalui fitur ajukan bantuan
+                                    """
+                            );
+                        }
+                    }
+
                     Mono<ChatMessage> chatMessageMono = this.chatMessageRepository.save(chatMessage);
                     Mono<ChatResponse> chatResponseMono = this.chatResponseRepository.save(chatResponse);
                     var ops = this.redisTemplate.opsForValue();
@@ -105,10 +127,10 @@ public class ChatService implements IChatService{
                             .then(Mono.fromCallable(() -> ResponseUtil.sendResponse(
                                     HttpStatus.OK,
                                     Response
-                                            .<OpenApiResponse>builder()
+                                            .<OpenApiCreateMessage>builder()
                                             .success(true)
                                             .message("sukses membuat pertanyaan ke open ai")
-                                            .data(d)
+                                            .data(response)
                                             .build()
                             )));
                 })

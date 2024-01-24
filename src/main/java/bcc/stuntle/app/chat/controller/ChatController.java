@@ -3,6 +3,7 @@ package bcc.stuntle.app.chat.controller;
 import bcc.stuntle.app.chat.service.IChatService;
 import bcc.stuntle.dto.ChatDto;
 import bcc.stuntle.entity.OpenApiClientResponse;
+import bcc.stuntle.entity.OpenApiCreateMessage;
 import bcc.stuntle.entity.OpenApiResponse;
 import bcc.stuntle.entity.Response;
 import bcc.stuntle.security.authentication.JwtAuthentication;
@@ -36,7 +37,7 @@ public class ChatController {
                     MediaType.APPLICATION_JSON_VALUE
             }
     )
-    public Mono<ResponseEntity<Response<OpenApiResponse>>> create(
+    public Mono<ResponseEntity<Response<OpenApiCreateMessage>>> create(
             @RequestBody @Valid ChatDto.Create dto,
             JwtAuthentication<String> jwtAuthentication
     ){
