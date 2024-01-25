@@ -172,6 +172,7 @@ public class ChatService implements IChatService{
                                     var responseMessage = ResponseMessage
                                             .builder()
                                             .message(d.getMessage())
+                                            .createdAt(response.getCreatedAt())
                                             .build();
                                     if(value == null){
                                         var mapListValue = new ArrayList<ResponseMessage>();
